@@ -93,25 +93,13 @@
     <module>common/tags</module>
     <module>core</module>
     <module>graphx</module>
-    <module>mllib</module>
     <module>mllib-local</module>
     <module>tools</module>
     <module>streaming</module>
-    <module>sql/catalyst</module>
-    <module>sql/core</module>
-    <module>sql/hive</module>
     <module>assembly</module>
-    <module>external/flume</module>
-    <module>external/flume-sink</module>
-    <module>external/flume-assembly</module>
     <module>examples</module>
     <module>repl</module>
     <module>launcher</module>
-    <module>external/kafka-0-8</module>
-    <module>external/kafka-0-8-assembly</module>
-    <module>external/kafka-0-10</module>
-    <module>external/kafka-0-10-assembly</module>
-    <module>external/kafka-0-10-sql</module>
   </modules>
 
   <properties>
@@ -2431,23 +2419,23 @@
     </profile>
 
     <!-- Ganglia integration is not included by default due to LGPL-licensed code -->
-    <profile>
+<!--    <profile>
       <id>spark-ganglia-lgpl</id>
       <modules>
         <module>external/spark-ganglia-lgpl</module>
       </modules>
-    </profile>
+    </profile>-->
 
     <!-- Kinesis integration is not included by default due to ASL-licensed code -->
-    <profile>
+    <!--<profile>
       <id>kinesis-asl</id>
       <modules>
         <module>external/kinesis-asl</module>
         <module>external/kinesis-asl-assembly</module>
       </modules>
-    </profile>
+    </profile>-->
 
-    <profile>
+  <!--  <profile>
       <id>java8-tests</id>
       <activation>
         <jdk>[1.8,)</jdk>
@@ -2455,7 +2443,7 @@
       <modules>
         <module>external/java8-tests</module>
       </modules>
-    </profile>
+    </profile>-->
 
     <profile>
       <id>doclint-java8-disable</id>
@@ -2476,12 +2464,12 @@
       </build>
     </profile>
 
-    <profile>
+<!--    <profile>
       <id>docker-integration-tests</id>
       <modules>
         <module>external/docker-integration-tests</module>
       </modules>
-    </profile>
+    </profile>-->
 
     <!-- A series of build profiles where customizations for particular Hadoop releases can be made -->
 
@@ -2545,12 +2533,12 @@
       </modules>
     </profile>
 
-    <profile>
+   <!-- <profile>
       <id>hive-thriftserver</id>
       <modules>
         <module>sql/hive-thriftserver</module>
       </modules>
-    </profile>
+    </profile>-->
 
     <profile>
       <id>scala-2.10</id>
