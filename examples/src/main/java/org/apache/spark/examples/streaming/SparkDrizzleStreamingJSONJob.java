@@ -2,6 +2,7 @@ package org.apache.spark.examples.streaming;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.Level;
+import org.apache.spark.Accumulator;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.function.VoidFunction;
@@ -19,9 +20,22 @@ import java.util.regex.Pattern;
 /**
  * Created by likit on 25-Jun-17.
  */
-public class SparkDrizzleStreamingJSONJob {
+public class SparkDrizzleStreamingJSONJob implements Runnable  {
+
+    private static Accumulator<Integer> messCounter;
+    private static String[] args={};
 
     private static final Pattern SPACE = Pattern.compile(" ");
+
+    /**
+     * empty constructor
+     */
+    private SparkDrizzleStreamingJSONJob() {
+    }
+
+    public SparkDrizzleStreamingJSONJob(String[] strings) {
+        this.args=strings;
+    }
 
     public static void main(String[] args) throws Exception {
 
@@ -45,6 +59,9 @@ public class SparkDrizzleStreamingJSONJob {
         JavaPairReceiverInputDStream<String, String> messages =
                 KafkaUtils.createStream(jssc, args[0], args[1], topicMap);
 
+        //Instantiate the accumulator
+        messCounter = jssc.sparkContext().accumulator(1, "messCount");
+
         messages.foreachRDD(new VoidFunction<JavaPairRDD<String, String>>() {
             @Override
             public void call(JavaPairRDD<String, String> rdd) throws Exception {
@@ -52,6 +69,7 @@ public class SparkDrizzleStreamingJSONJob {
                 rdd.foreach(new VoidFunction<Tuple2<String, String>>() {
                     @Override
                     public void call(Tuple2<String, String> stringStringTuple2) throws Exception {
+                          messCounter.add(1);
 //                        JSONObject json = new JSONObject(stringStringTuple2._2);
 //                        System.out.println("Time for streaming (ms): " +(System.currentTimeMillis() - json.getLong("Time")));
                     }
@@ -63,4 +81,19 @@ public class SparkDrizzleStreamingJSONJob {
         jssc.awaitTermination();
     }
 
+    /**
+     * return the value of accumulator called in the driver program
+     */
+    public static Integer getAccumulator() {
+        return messCounter.value();
+    }
+    @Override
+    public void run() {
+        try {
+            SparkDrizzleStreamingJSONJob.main(args);
+        } catch (Exception e) {
+            e.printStackTrace();
+
+        }
+    }
 }

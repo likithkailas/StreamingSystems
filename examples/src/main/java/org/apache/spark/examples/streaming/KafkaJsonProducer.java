@@ -13,8 +13,10 @@ import java.util.Properties;
 /**
  * Created by Pai on 09-04-2017.
  */
-public class KafkaJsonProducer {
+public class KafkaJsonProducer implements Runnable {
 
+    public KafkaJsonProducer() {
+    }
     public static void main(String[] args) throws Exception{
 
         String topicName = "test";
@@ -46,5 +48,15 @@ public class KafkaJsonProducer {
         }
         System.out.println("Message sent successfully");
         producer.close();
+    }
+
+    @Override
+    public void run() {
+        try {
+            KafkaJsonProducer.main(new String[] {});
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 }

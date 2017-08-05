@@ -86,10 +86,28 @@ public class KafkaTests {
     public void someKafkaTest() {
 
         try {
-            SparkDrizzleStreamingJSONJob.main(new String[]{
-                    zookeeperConnect, "my-consumer-group", "test", "1"
+//            SparkDrizzleStreamingJSONJob.main(new String[]{
+//                    zookeeperConnect, "my-consumer-group", "test", "1"
+//
+//            });
+            //Thread controlling the Spark streaming
+            Thread sparkdrizzleStreamerThread = new Thread(
+                    new SparkDrizzleStreamingJSONJob(new String[] { zookeeperConnect, "my-consumer-group", "test", "1" }),
+                    "spark-streaming");
+            sparkdrizzleStreamerThread.start();
 
-            });
+            //Thread to start the producer
+            Thread producerThread = new Thread(new KafkaJsonProducer(), "producer");
+            producerThread.start();
+
+            //current kafkaTest thread to sleep for 1 second
+            Thread.sleep(1000000);
+
+            producerThread.stop();
+            sparkdrizzleStreamerThread.stop();
+
+            int sparkAccVal = SparkDrizzleStreamingJSONJob.getAccumulator().intValue();
+            System.out.println("Drizzle-Spark Throughput value : " + sparkAccVal);
 
 
 
