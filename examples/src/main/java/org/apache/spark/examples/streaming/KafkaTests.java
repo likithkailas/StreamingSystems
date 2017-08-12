@@ -1,4 +1,5 @@
 package org.apache.spark.examples.streaming;
+
 import kafka.server.KafkaConfig;
 import kafka.server.KafkaServerStartable;
 import org.apache.commons.io.FileUtils;
@@ -8,6 +9,7 @@ import org.junit.Before;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
@@ -25,7 +27,6 @@ public class KafkaTests {
     String zookeeperPort = "";
     Properties kafkaProps = null;
     String zookeeperConnect;
-
 
 
     /**
@@ -86,29 +87,28 @@ public class KafkaTests {
     public void someKafkaTest() {
 
         try {
-//            SparkDrizzleStreamingJSONJob.main(new String[]{
-//                    zookeeperConnect, "my-consumer-group", "test", "1"
-//
-//            });
-            //Thread controlling the Spark streaming
-            Thread sparkdrizzleStreamerThread = new Thread(
-                    new SparkDrizzleStreamingJSONJob(new String[] { zookeeperConnect, "my-consumer-group", "test", "1" }),
-                    "spark-streaming");
-            sparkdrizzleStreamerThread.start();
+            SparkDrizzleStreamingJSONJob.main(new String[]{
+                    zookeeperConnect, "my-consumer-group", "test", "1"
+            });
+
+            //Thread controlling the Drizzle-Spark streaming
+//            Thread sparkdrizzleStreamerThread = new Thread(
+//                    new SparkDrizzleStreamingJSONJob(new String[] { zookeeperConnect, "my-consumer-group", "test", "1" }),
+//                    "spark-streaming");
+//            sparkdrizzleStreamerThread.start();
 
             //Thread to start the producer
-            Thread producerThread = new Thread(new KafkaJsonProducer(), "producer");
-            producerThread.start();
+//            Thread producerThread = new Thread(new KafkaJsonProducer(), "producer");
+//            producerThread.start();
 
             //current kafkaTest thread to sleep for 1 second
-            Thread.sleep(1000000);
+//            Thread.sleep(60000);
+//
+//            producerThread.stop();
+//            sparkdrizzleStreamerThread.stop();
 
-            producerThread.stop();
-            sparkdrizzleStreamerThread.stop();
-
-            int sparkAccVal = SparkDrizzleStreamingJSONJob.getAccumulator().intValue();
-            System.out.println("Drizzle-Spark Throughput value : " + sparkAccVal);
-
+//            int sparkAccVal = SparkDrizzleStreamingJSONJob.getAccumulator().intValue();
+//            System.out.println("Drizzle-Spark Throughput value : " + sparkAccVal);
 
 
         } catch (Exception e) {
@@ -120,11 +120,11 @@ public class KafkaTests {
     }
 
 
-
     /**
      * shutdown ZK and Kafka Broker.
      */
-    @After public void tearDown() {
+    @After
+    public void tearDown() {
         kafka.shutdown();
 
         try {

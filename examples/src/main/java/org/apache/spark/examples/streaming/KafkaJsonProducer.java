@@ -17,7 +17,8 @@ public class KafkaJsonProducer implements Runnable {
 
     public KafkaJsonProducer() {
     }
-    public static void main(String[] args) throws Exception{
+
+    public static void main(String[] args) throws Exception {
 
         String topicName = "test";
         Properties props = new Properties();
@@ -36,14 +37,14 @@ public class KafkaJsonProducer implements Runnable {
         Producer<String, String> producer = new org.apache.kafka.clients.producer.KafkaProducer<String, String>(props);
         try {
 
-            for(int i=0; i<Integer.MAX_VALUE; i++){
+            for (int i = 0; i < 10; i++) {
                 JSONObject record = new JSONObject();
                 record.put("message_no", i);
                 record.put("Time", System.currentTimeMillis());
-                producer.send(new ProducerRecord<String, String>(topicName, ""+i, record.toString()));
+                producer.send(new ProducerRecord<String, String>(topicName, "" + i, record.toString()));
             }
 
-        }catch (JSONException e){
+        } catch (JSONException e) {
             e.printStackTrace();
         }
         System.out.println("Message sent successfully");
@@ -53,7 +54,7 @@ public class KafkaJsonProducer implements Runnable {
     @Override
     public void run() {
         try {
-            KafkaJsonProducer.main(new String[] {});
+            KafkaJsonProducer.main(new String[]{});
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

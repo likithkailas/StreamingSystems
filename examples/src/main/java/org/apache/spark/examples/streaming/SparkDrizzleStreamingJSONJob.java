@@ -20,10 +20,10 @@ import java.util.regex.Pattern;
 /**
  * Created by likit on 25-Jun-17.
  */
-public class SparkDrizzleStreamingJSONJob implements Runnable  {
+public class SparkDrizzleStreamingJSONJob implements Runnable {
 
     private static Accumulator<Integer> messCounter;
-    private static String[] args={};
+    private static String[] args = {};
 
     private static final Pattern SPACE = Pattern.compile(" ");
 
@@ -34,7 +34,7 @@ public class SparkDrizzleStreamingJSONJob implements Runnable  {
     }
 
     public SparkDrizzleStreamingJSONJob(String[] strings) {
-        this.args=strings;
+        this.args = strings;
     }
 
     public static void main(String[] args) throws Exception {
@@ -65,13 +65,13 @@ public class SparkDrizzleStreamingJSONJob implements Runnable  {
         messages.foreachRDD(new VoidFunction<JavaPairRDD<String, String>>() {
             @Override
             public void call(JavaPairRDD<String, String> rdd) throws Exception {
-                System.out.println("Messages per sec: "+rdd.count());
+//                System.out.println("Messages per sec: "+rdd.count());
                 rdd.foreach(new VoidFunction<Tuple2<String, String>>() {
                     @Override
                     public void call(Tuple2<String, String> stringStringTuple2) throws Exception {
-                          messCounter.add(1);
-//                        JSONObject json = new JSONObject(stringStringTuple2._2);
-//                        System.out.println("Time for streaming (ms): " +(System.currentTimeMillis() - json.getLong("Time")));
+                        messCounter.add(1);
+                        JSONObject json = new JSONObject(stringStringTuple2._2);
+                        System.out.println("Drizzle-spark latency (ms): " + (System.currentTimeMillis() - json.getLong("Time")));
                     }
                 });
             }
@@ -87,6 +87,7 @@ public class SparkDrizzleStreamingJSONJob implements Runnable  {
     public static Integer getAccumulator() {
         return messCounter.value();
     }
+
     @Override
     public void run() {
         try {
