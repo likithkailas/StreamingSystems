@@ -20,81 +20,77 @@ import java.util.regex.Pattern;
 /**
  * Created by likit on 25-Jun-17.
  */
-public class SparkDrizzleStreamingJSONJob implements Runnable {
+public class SparkDrizzleStreamingJSONJob implements  java.io.Serializable, Runnable {
 
-    private static Accumulator<Integer> messCounter;
-    private static String[] args = {};
-
-    private static final Pattern SPACE = Pattern.compile(" ");
+    Accumulator<Integer> messCounter;
+    transient SparkConf sparkConf;
+    transient JavaStreamingContext jssc;
+    String zooKeeper;
+    String group;
+    Map<String, Integer> topicMap;
+    long startTime;
 
     /**
      * empty constructor
      */
-    private SparkDrizzleStreamingJSONJob() {
+    public SparkDrizzleStreamingJSONJob() {
     }
 
-    public SparkDrizzleStreamingJSONJob(String[] strings) {
-        this.args = strings;
-    }
 
-    public static void main(String[] args) throws Exception {
+    /**
+     * main method implementation
+     */
+    @Override
+    public void run() {
+
+        sparkConf = new SparkConf().setAppName("StreamingJob").setMaster("local[16]");
+
+        jssc = new JavaStreamingContext(sparkConf, Durations.seconds(1));
+
+        JavaPairReceiverInputDStream<String,String> messages = KafkaUtils.createStream(jssc, zooKeeper, group, topicMap);
+
+        messCounter = jssc.sparkContext().accumulator(0, "messCount");
 
 
-        if (args.length < 4) {
-            System.err.println("Usage: StreamingJob <zkQuorum> <group> <topics> <numThreads>");
-            System.exit(1);
+        try {
+
+            messages.foreachRDD(new VoidFunction<JavaPairRDD<String, String>>() {
+                @Override
+                public void call(JavaPairRDD<String, String> rdd) throws Exception {
+                    rdd.foreach(new VoidFunction<Tuple2<String, String>>() {
+                        @Override
+                        public void call(Tuple2<String, String> stringStringTuple2) throws Exception {
+//							FileWriter fw = new FileWriter("C:\\TEMP\\output"+rdd.id()+".txt", true);
+//							BufferedWriter bufferedWriter = new BufferedWriter(fw);
+                            //increment accumulator value for every message call
+                            messCounter.add(1);
+                            JSONObject json = new JSONObject(stringStringTuple2._2);
+                            System.out.println("Time for streaming (ms)"+json.getInt("message_no")+ ": "+(System.currentTimeMillis() - json.getLong("Time")));
+//                            bufferedWriter.write(""+json.getInt("message_no")+","+System.currentTimeMillis()+","+(System.currentTimeMillis() - json.getLong("Time")));
+//                            bufferedWriter.newLine();
+//                            bufferedWriter.close();
+                        }
+                    });
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        SparkConf sparkConf = new SparkConf().setAppName("StreamingJob").setMaster("local[16]");
-        // Create the context with 1 seconds batch size
-        JavaStreamingContext jssc = new JavaStreamingContext(sparkConf, Durations.seconds(1));
-
-        int numThreads = Integer.parseInt(args[3]);
-        Map<String, Integer> topicMap = new HashMap<>();
-        String[] topics = args[2].split(",");
-        for (String topic : topics) {
-            topicMap.put(topic, numThreads);
-        }
-
-        JavaPairReceiverInputDStream<String, String> messages =
-                KafkaUtils.createStream(jssc, args[0], args[1], topicMap);
-
-        //Instantiate the accumulator
-        messCounter = jssc.sparkContext().accumulator(1, "messCount");
-
-        messages.foreachRDD(new VoidFunction<JavaPairRDD<String, String>>() {
-            @Override
-            public void call(JavaPairRDD<String, String> rdd) throws Exception {
-//                System.out.println("Messages per sec: "+rdd.count());
-                rdd.foreach(new VoidFunction<Tuple2<String, String>>() {
-                    @Override
-                    public void call(Tuple2<String, String> stringStringTuple2) throws Exception {
-                        messCounter.add(1);
-                        JSONObject json = new JSONObject(stringStringTuple2._2);
-                        System.out.println("Drizzle-spark latency (ms): " + (System.currentTimeMillis() - json.getLong("Time")));
-                    }
-                });
-            }
-        });
 
         jssc.start();
-        jssc.awaitTermination();
+        try {
+            jssc.awaitTermination();
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
     }
 
     /**
      * return the value of accumulator called in the driver program
      */
-    public static Integer getAccumulator() {
+    public Integer getAccumulator() {
         return messCounter.value();
-    }
-
-    @Override
-    public void run() {
-        try {
-            SparkDrizzleStreamingJSONJob.main(args);
-        } catch (Exception e) {
-            e.printStackTrace();
-
-        }
     }
 }
